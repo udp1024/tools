@@ -3,9 +3,10 @@
 import sys
 import ipaddress
 import subprocess
+import json
 
 if len(sys.argv) < 2:
-   print("Usage: netscan.py <ADR-range>     (example: 192.168.1.0 - utility assumes /24 or Class C network in IP4 address space.)")
+    print("Usage: netscan.py <ADR-range>     (example: 192.168.1.0 - utility assumes /24 or Class C network in IP4 address space.)")
     sys.exit(1)
 else:
 	ip_address = sys.argv[1]
@@ -20,13 +21,13 @@ def extract_network(ip_address):
 		network = ip.network
 		return str(network)
 	except ValueError:
-		print("Invalid IP address. Valid example 192.168.1.55 - exiting."
+		print("Invalid IP address. Valid example 192.168.1.55 - exiting.")
 		return None
 
 
 
 def scan_network(network):
-	network_macs = {'ipaddress':[],'macaddress':[]}
+    network_macs = {'ipaddress':[],'macaddress':[]}
     try:
         # Create an IP network object
         ip_net = ipaddress.ip_network(network)
@@ -40,17 +41,18 @@ def scan_network(network):
 
             # Check the return code to determine if the IP address is reachable
             if result.returncode == 0:
-                # print(ip_address, "is reachable.")
-		macaddress = find_mac_address(ip_address)
-		if !(macaddress == "Failed to find MAC address"):
-			network_macs[ip_address] = (ip_address, macaddress)
-            else:
-                #print(ip_address, "is not reachable.")
-	
-	file_path = network+'.json'
-	with open(file_path, 'w') as json_file:
-		json.dump(network_macs, json_file)
-	print("List of IP and Mac addresses saved as ",file_path)
+                  print(ip_address, "is reachable.")
+        macaddress = find_mac_address(ip_address)
+        if (macaddress != "Failed to find MAC address"):
+            network_macs[ip_address] = (ip_address, macaddress)
+        else:
+            print(ip_address, "is not reachable.")
+
+        file_path = network+'.json'
+        with open(file_path, 'w') as json_file:
+            json.dump(network_macs, json_file)
+    
+        print("List of IP and Mac addresses saved as ",file_path)
 
     except ValueError:
         print("Invalid network address")
@@ -71,4 +73,3 @@ def find_mac_address(ip_address):
 
 
 scan_network(extract_network(ip_address))
-
